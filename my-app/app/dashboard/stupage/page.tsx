@@ -12,7 +12,7 @@ import { PlayCircle, Download, MessageCircle, Trophy, Users2 } from "lucide-reac
 
 interface Class {
   id: number;
-  name: string;
+  name: string;3
   schedule: string;
   updates: string;
 }
@@ -78,9 +78,9 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-black-50 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <h1 className="text-3xl font-bold mb-4">🎓 Student Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-4 text-foreground">🎓 Student Dashboard</h1>
 
         {/* Join Class Section */}
         <div className="flex gap-2 mb-6">
@@ -97,7 +97,7 @@ export default function StudentDashboard() {
         </div>
 
         <Tabs defaultValue="classes" className="space-y-4">
-          <TabsList>
+          <TabsList className="grid grid-cols-4">
             <TabsTrigger value="classes">My Classes</TabsTrigger>
             <TabsTrigger value="sessions">Live & Recorded</TabsTrigger>
             <TabsTrigger value="interactive">Interactive Learning</TabsTrigger>
@@ -107,7 +107,7 @@ export default function StudentDashboard() {
           <TabsContent value="classes" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {classes.map((cls) => (
-                <Card key={cls.id} className="hover:shadow-lg transition-shadow">
+                <Card key={cls.id} className="hover:shadow-lg transition-shadow bg-white">
                   <CardHeader>
                     <CardTitle className="text-lg font-semibold text-black">{cls.name}</CardTitle>
                   </CardHeader>
@@ -122,7 +122,7 @@ export default function StudentDashboard() {
 
           <TabsContent value="sessions">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
+              <Card className="bg-white">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-black">
                     <PlayCircle className="h-5 w-5 text-red-500" />
@@ -147,7 +147,7 @@ export default function StudentDashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-black">
                     <Download className="h-5 w-5 text-blue-500" />
@@ -157,7 +157,7 @@ export default function StudentDashboard() {
                 <CardContent>
                   <ScrollArea className="h-[300px] pr-4">
                     {recordedSessions.map((session) => (
-                      <div key={session.id} className="mb-4 p-3 border rounded-lg hover:bg-black-50">
+                      <div key={session.id} className="mb-4 p-3 border rounded-lg hover:bg-gray-50">
                         <div className="flex justify-between items-center">
                           <div>
                             <h3 className="font-medium text-black">{session.title}</h3>
@@ -178,7 +178,7 @@ export default function StudentDashboard() {
 
           <TabsContent value="interactive">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card>
+              <Card className="bg-white">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-black">
                     <Trophy className="h-5 w-5 text-yellow-500" />
@@ -197,7 +197,7 @@ export default function StudentDashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white">
                 <CardHeader>
                   <CardTitle className="text-black">Active Polls</CardTitle>
                 </CardHeader>
@@ -206,7 +206,7 @@ export default function StudentDashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white">
                 <CardHeader>
                   <CardTitle className="text-black">Quick Quiz</CardTitle>
                 </CardHeader>
@@ -218,7 +218,7 @@ export default function StudentDashboard() {
           </TabsContent>
 
           <TabsContent value="discussions">
-            <Card>
+            <Card className="bg-white">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-black">
                   <MessageCircle className="h-5 w-5 text-green-500" />
