@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; 
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -69,7 +69,7 @@ export default function StudentDashboard() {
     if (!classCode.trim()) return;
     const newClass: Class = {
       id: classes.length + 1,
-      name: Class ${classCode},
+      name: `Class ${classCode}`,
       schedule: "TBA",
       updates: "No updates yet"
     };
@@ -249,6 +249,6 @@ export default function StudentDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
+    </div>
+  );
 }

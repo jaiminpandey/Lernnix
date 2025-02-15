@@ -80,7 +80,10 @@ export default function HeadingBox({
       selection?.removeAllRanges();
       selection?.addRange(range);
     } catch (e) {
-      console.error("Error restoring caret position:", e);
+      // Provide more descriptive error message and handle gracefully
+      console.warn("Unable to restore caret position. This is non-critical and won't affect functionality.", {
+        details: e instanceof Error ? e.message : String(e)
+      });
     }
   }, []);
 

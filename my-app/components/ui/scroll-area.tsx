@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 interface CardProps {
   children: ReactNode;
-  className?: string; // ✅ Add className explicitly
+  className?: string; 
 }
 
 export function Card({ children, className }: CardProps) {

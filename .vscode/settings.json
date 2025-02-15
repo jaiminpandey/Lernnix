@@ -2,9 +2,16 @@
   "cSpell.words": [
     "defaultpage",
     "headingbox",
+    "jaimin",
+    "Niishat",
+    "Nirav",
     "parentpage",
+    "Shiavm",
     "stupage",
     "teacherpage"
   ],
-  "codium.codeCompletion.enable": true
+  "codium.codeCompletion.enable": true,
+  "cSpell.ignoreWords": [
+    "sir"
+  ]
 }

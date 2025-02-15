@@ -21,7 +21,13 @@ export default function LoginPage() {
         callbackUrl: '/role-selection'
       })
     } catch (error) {
-      console.error('Sign in error:', error)
+      // More descriptive error handling with type checking
+      const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+      console.warn('Sign in error:', {
+        provider,
+        error: errorMessage,
+        timestamp: new Date().toISOString()
+      });
       setIsLoading(false)
     }
   }
