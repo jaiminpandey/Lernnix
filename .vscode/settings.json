@@ -1,6 +1,8 @@
 {
   "cSpell.words": [
     "defaultpage",
+    "firestore",
+    "Firestore",
     "headingbox",
     "jaimin",
     "Niishat",
@@ -8,10 +10,11 @@
     "parentpage",
     "Shiavm",
     "stupage",
-    "teacherpage"
+    "supabase",
+    "SUPABASE",
+    "teacherpage",
+    "XVCJ"
   ],
   "codium.codeCompletion.enable": true,
-  "cSpell.ignoreWords": [
-    "sir"
-  ]
+  "cSpell.ignoreWords": ["sir"]
 }

@@ -7,27 +7,28 @@ import { ThemeToggle } from '../components/theme-toggle'
 import Link from 'next/link'
 import { signIn, useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function LoginPage() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const [isLoading, setIsLoading] = useState(false)
 
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      router.push('/role-selection')
+    }
+  }, [status, session, router])
+
   const handleAuth = async (provider: string) => {
-    setIsLoading(true)
     try {
+      setIsLoading(true)
       await signIn(provider, {
+        redirect: true,
         callbackUrl: '/role-selection'
       })
     } catch (error) {
-      // More descriptive error handling with type checking
-      const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
-      console.warn('Sign in error:', {
-        provider,
-        error: errorMessage,
-        timestamp: new Date().toISOString()
-      });
+      console.error('Authentication error:', error)
       setIsLoading(false)
     }
   }
@@ -55,6 +56,7 @@ export default function LoginPage() {
               variant="outline" 
               className="w-full bg-background hover:bg-accent text-foreground border border-teal-400 shadow-[0_0_15px_rgba(20,184,166,0.5)] hover:shadow-[0_0_20px_rgba(20,184,166,0.7)] transition-all duration-300"
               onClick={() => handleAuth('google')}
+              disabled={isLoading}
             >
               <GoogleIcon className="w-5 h-5 mr-2" />
               Continue with Google
@@ -64,6 +66,7 @@ export default function LoginPage() {
               variant="outline" 
               className="w-full hover:bg-accent text-foreground border-input hover:border-teal-400 hover:shadow-[0_0_15px_rgba(20,184,166,0.5)] transition-all duration-300"
               onClick={() => handleAuth('github')}
+              disabled={isLoading}
             >
               <Github className="w-5 h-5 mr-2" />
               Continue with GitHub

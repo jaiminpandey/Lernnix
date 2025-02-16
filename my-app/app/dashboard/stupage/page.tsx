@@ -1,21 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; 
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-import { PlayCircle, Download, MessageCircle, Trophy, Users2 } from "lucide-react";
-
-interface Class {
-  id: number;
-  name: string;3
-  schedule: string;
-  updates: string;
-}
+import { PlayCircle, Download, MessageCircle, Trophy, Users2, AlertCircle } from "lucide-react";
+import { joinClass, getStudentEnrollments, leaveClass } from "@/lib/studentApi";
+import { useSession } from "next-auth/react";
+import { toast } from "react-hot-toast";
+import type { ClassEnrollment } from "@/types/database";
 
 interface LiveSession {
   id: number;
@@ -40,18 +36,13 @@ interface Discussion {
 }
 
 export default function StudentDashboard() {
+  const { data: session } = useSession();
   const [classCode, setClassCode] = useState("");
-  const [classes, setClasses] = useState<Class[]>([
-    { id: 1, name: "Math (harsh sir)", schedule: "Mon, tues, Wed - 10 AM To 12 PM", updates: "New assignment posted" },
-    { id: 2, name: "History(jaimin sir)", schedule: "Tue, Wed, Thu - 12 PM to 2 PM", updates: "Exam next week!" },
-    { id: 3, name: "Civics(Nirav sir)", schedule: "Tue, Wed, Thu - 3 PM to 5 PM", updates: "Exam next week!" },
-    { id: 4, name: "English(Niishat sir)", schedule: "Thur, Fri, Sat - 1 PM to 2 PM", updates: "Exam next week!" },
-    { id: 5, name: "P.T(Shiavm sir)", schedule: "Fri & Sat - 1 PM 2 PM", updates: "Exam next week!" },
-    { id: 6, name: "Physics(Shiavm sir)", schedule: "Fri  & Sat - 4 PM to 5 PM", updates: "Exam next week!" },
-  ]);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [enrollments, setEnrollments] = useState<ClassEnrollment[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [liveSessions] = useState<LiveSession[]>([
-    { id: 1, title: "Math  - Calculus Basics", startTime: "10:00 AM", isLive: true },
+    { id: 1, title: "Math - Calculus Basics", startTime: "10:00 AM", isLive: true },
     { id: 2, title: "Physics - Quantum Mechanics", startTime: "2:00 PM", isLive: false }
   ]);
 
@@ -65,17 +56,57 @@ export default function StudentDashboard() {
     { id: 2, title: "Physics Project Group", author: "Sarah", replies: 12, lastActive: "30 min ago" }
   ]);
 
-  const handleJoinClass = () => {
-    if (!classCode.trim()) return;
-    const newClass: Class = {
-      id: classes.length + 1,
-      name: `Class ${classCode}`,
-      schedule: "TBA",
-      updates: "No updates yet"
+  // Fetch student's enrolled classes
+  useEffect(() => {
+    const loadEnrollments = async () => {
+      if (session?.user?.id) {
+        try {
+          const data = await getStudentEnrollments(session.user.id);
+          setEnrollments(data);
+        } catch (error) {
+          console.error('Error loading enrollments:', error);
+          setError('Failed to load your classes');
+        }
+      }
     };
-    setClasses([...classes, newClass]);
-    setClassCode("");
+    
+    loadEnrollments();
+  }, [session]);
+
+  const handleJoinClass = async () => {
+    if (!classCode.trim() || !session?.user?.id) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const enrollment = await joinClass(session.user.id, classCode.trim());
+      setEnrollments(prev => [...prev, enrollment]);
+      setClassCode("");
+      toast.success('Successfully joined the class!');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to join class';
+      setError(message);
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const handleLeaveClass = async (classId: string) => {
+    if (!session?.user?.id) return;
+    
+    try {
+      await leaveClass(session.user.id, classId);
+      setEnrollments(prev => prev.filter(e => e.class_id !== classId));
+      toast.success('Successfully left the class');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to leave class';
+      toast.error(message);
+    }
+  };
+
+  // ... rest of the existing state ...
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -83,17 +114,31 @@ export default function StudentDashboard() {
         <h1 className="text-3xl font-bold mb-4 text-foreground">🎓 Student Dashboard</h1>
 
         {/* Join Class Section */}
-        <div className="flex gap-2 mb-6">
-          <Input
-            type="text"
-            placeholder="Enter class code"
-            value={classCode}
-            onChange={(e) => setClassCode(e.target.value)}
-            className="max-w-xs"
-          />
-          <Button onClick={handleJoinClass} className="bg-primary">
-            Join Class
-          </Button>
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              placeholder="Enter class code"
+              value={classCode}
+              onChange={(e) => setClassCode(e.target.value)}
+              className="max-w-xs text-black"
+              disabled={isLoading}
+            />
+            <Button 
+              onClick={handleJoinClass} 
+              className="bg-primary"
+              disabled={isLoading || !classCode.trim()}
+            >
+              {isLoading ? 'Joining...' : 'Join Class'}
+            </Button>
+          </div>
+          
+          {error && (
+            <div className="flex items-center gap-2 text-red-500">
+              <AlertCircle className="h-4 w-4" />
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
         </div>
 
         <Tabs defaultValue="classes" className="space-y-4">
@@ -105,19 +150,41 @@ export default function StudentDashboard() {
           </TabsList>
 
           <TabsContent value="classes" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {classes.map((cls) => (
-                <Card key={cls.id} className="hover:shadow-lg transition-shadow bg-white">
-                  <CardHeader>
-                    <CardTitle className="text-lg font-semibold text-black">{cls.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-black">📅 Schedule: {cls.schedule}</p>
-                    <p className="text-black mt-2">📝 Updates: {cls.updates}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {enrollments.length === 0 ? (
+              <Card className="bg-white">
+                <CardContent className="flex flex-col items-center justify-center py-8">
+                  <p className="text-black text-lg mb-4">You haven't joined any classes yet</p>
+                  <p className="text-gray-500 text-sm">Use a class code to join your first class!</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {enrollments.map((enrollment) => (
+                  <Card key={enrollment.id} className="hover:shadow-lg transition-shadow bg-white">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-semibold text-black">
+                        {enrollment.class?.name}
+                      </CardTitle>
+                      <Badge variant="outline" className="text-black">
+                        {enrollment.class?.subject}
+                      </Badge>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-black mb-4">{enrollment.class?.description}</p>
+                      <div className="flex justify-between items-center">
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => handleLeaveClass(enrollment.class_id)}
+                        >
+                          Leave Class
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="sessions">

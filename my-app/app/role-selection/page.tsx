@@ -1,35 +1,44 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react"
 import { ThemeToggle } from '@/components/theme-toggle'
-import { useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 
 export default function RoleSelection() {
   const router = useRouter()
-  const { data: session, status } = useSession()
-
-  useEffect(() => {
-    if (!session && status !== 'loading') {
-      router.push('/')
-    }
-  }, [session, status, router])
-
-  useEffect(() => {
-    if (status === 'unauthenticated') {
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
       router.replace('/')
-    }
-  }, [status, router])
+    },
+  })
 
-  const handleRoleSelection = (role: string) => {
-    const routes = {
-      student: "/dashboard/stupage",
-      teacher: "/dashboard/teacherpage",
-      parent: "/dashboard/parentpage"
+  const handleRoleSelection = async (role: 'student' | 'teacher' | 'parent') => {
+    if (!session?.user?.id) return;
+
+    try {
+      // Update user role in Supabase
+      const { error } = await supabase
+        .from('users')
+        .update({ role: role })
+        .eq('id', session.user.id);
+
+      if (error) throw error;
+
+      // Redirect based on role
+      const routes = {
+        student: "/dashboard/stupage",
+        teacher: "/dashboard/teacherpage",
+        parent: "/dashboard/parentpage"
+      };
+
+      router.push(routes[role]);
+    } catch (error) {
+      console.error('Error updating role:', error);
     }
-    const route = routes[role as keyof typeof routes] || "/"
-    router.push(route)
   }
 
   if (status === 'loading') {
